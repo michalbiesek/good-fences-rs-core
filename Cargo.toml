@@ -39,6 +39,10 @@ debug = true
 split-debuginfo = "packed"
 # optimises for speed over size
 opt-level = "s"
+# Required: NAPI-RS #[ctor] registrations from dependent crates (good_fences_napi,
+# unused_finder_napi) are stripped when codegen-units > 1 combined with LTO.
+# See: https://github.com/napi-rs/napi-rs/issues/1791
+codegen-units = 1
 # run link-time optimisation for release builds.
 # This will make the final binary take longer to build, but can result in faster, samller  code.
 lto = true

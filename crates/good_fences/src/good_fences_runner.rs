@@ -77,7 +77,7 @@ impl GoodFencesRunner {
     }
 
     pub fn find_import_violations(&self) -> FenceEvaluationResult<'_, '_> {
-        println!("Evaluating {} files", self.source_files.keys().len());
+        eprintln!("Evaluating {} files", self.source_files.keys().len());
         let mut evaluation_results = FenceEvaluationResult::new();
 
         let violation_results = self

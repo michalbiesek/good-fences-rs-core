@@ -11,11 +11,14 @@ use std::vec::Vec;
 struct RawTsconfigPathsJson {
     pub extends: Option<String>,
     pub compiler_options: Option<TsconfigPathsCompilerOptions>,
+    #[serde(default)]
+    pub exclude: Option<Vec<String>>,
 }
 
 #[derive(Debug, PartialEq, Eq, Default, Clone)]
 pub struct TsconfigPathsJson {
     pub compiler_options: TsconfigPathsCompilerOptions,
+    pub exclude: Vec<String>,
 }
 
 impl TsconfigPathsJson {
@@ -39,7 +42,8 @@ impl TsconfigPathsJson {
         };
 
         let mut compiler_options = base
-            .map(|b| b.compiler_options)
+            .as_ref()
+            .map(|b| b.compiler_options.clone())
             .unwrap_or_default();
 
         if let Some(overrides) = raw.compiler_options {
@@ -51,7 +55,13 @@ impl TsconfigPathsJson {
             }
         }
 
-        Ok(TsconfigPathsJson { compiler_options })
+        // Child exclude overrides base exclude (same as tsc behavior)
+        let exclude = match raw.exclude {
+            Some(exc) => exc,
+            None => base.map(|b| b.exclude).unwrap_or_default(),
+        };
+
+        Ok(TsconfigPathsJson { compiler_options, exclude })
     }
 }
 

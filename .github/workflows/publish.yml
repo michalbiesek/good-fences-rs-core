@@ -69,13 +69,32 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
           merge-multiple: true
       - name: display artifacts
         run: ls -R artifacts
+      - name: pack platform tarballs
+        shell: bash
+        run: |
+          VERSION=$(jq -r .version package.json)
+          mkdir -p tarballs
+          for dir in npm/*/; do
+            PLATFORM=$(basename "$dir")
+            PKG_JSON="$dir/package.json"
+            # find matching .node binary
+            BINARY=$(jq -r .main "$PKG_JSON")
+            if [ -f "artifacts/$BINARY" ]; then
+              cp "artifacts/$BINARY" "$dir/"
+              (cd "$dir" && npm pack --pack-destination ../../tarballs)
+            fi
+          done
+          ls tarballs/
       - uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/*
+          files: |
+            artifacts/*
+            tarballs/*.tgz
           generate_release_notes: true

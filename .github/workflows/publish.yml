@@ -79,11 +79,12 @@ jobs:
       - name: pack platform tarballs
         shell: bash
         run: |
-          VERSION=$(jq -r .version package.json)
+          VERSION="${GITHUB_REF_NAME#v}"
           mkdir -p tarballs
           for dir in npm/*/; do
-            PLATFORM=$(basename "$dir")
             PKG_JSON="$dir/package.json"
+            # inject version from git tag
+            jq --arg v "$VERSION" '.version = $v' "$PKG_JSON" > "$PKG_JSON.tmp" && mv "$PKG_JSON.tmp" "$PKG_JSON"
             # find matching .node binary
             BINARY=$(jq -r .main "$PKG_JSON")
             if [ -f "artifacts/$BINARY" ]; then
